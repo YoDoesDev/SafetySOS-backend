@@ -1,7 +1,7 @@
 const { cache } = require("../cache.js");
 const TABLE_SCHEMAS = require("../tableSchemas.js");
 const { db } = require("../database.js");
-const { logger } = require("../middleware/logger.js");
+const logger = require("../middleware/logger.js");
 const { getRecord } = require("./getRecord.js"); // To find the record before wiping it
 
 /**

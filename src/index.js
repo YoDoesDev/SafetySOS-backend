@@ -8,6 +8,7 @@ const server = http.createServer(app);
 const logger = require("./utils/middleware/logger.js");
 const { initDb } = require("./utils/data/database.js");
 const { initCache } = require("./utils/data/cache.js");
+const handleShutdown = require("./utils/handlers/server/handleShutdown.js");
 
 // One-Line Middleware 
 app.use(helmet());
@@ -40,19 +41,19 @@ async function startServer() {
         });
         
         // Listen for Ctrl+C in terminal
-        process.on("SIGINT", () => handleShutdown("SIGINT"));
+        process.on("SIGINT", async () => await handleShutdown("SIGINT"));
         
         // Listen for termination signals (like from Docker, PM2, or hosting providers)
-        process.on("SIGTERM", () => handleShutdown("SIGTERM"));
+        process.on("SIGTERM", async () => await handleShutdown("SIGTERM"));
         
         process.on("unhandledRejection", (reason, promise) => {
             logger.error(`❌ UNHANDLED REJECTION at: ${promise} | Reason: ${reason}`);
         });
         
-        process.on("uncaughtException", (error) => {
+        process.on("uncaughtException", async (error) => {
             logger.error(`💥 UNCAUGHT EXCEPTION: ${error.message}\nStack: ${error.stack}`);
             logger.warn("Application state unstable due to uncaught exception. Forcing shutdown...");
-            handleShutdown("uncaughtException");
+            await handleShutdown("uncaughtException");
         });
     } catch (error) {
         logger.error(`Failed to start server: ${error.message}`);

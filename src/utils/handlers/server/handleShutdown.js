@@ -1,6 +1,6 @@
 const { db } = require("../../data/database.js");
 const { cache } = require("../../data/cache.js");
-const { logger } = require("../../middleware/logger.js");
+const logger = require("../../middleware/logger.js");
 
 const handleShutdown = async (signal) => {
   logger.info(`Received ${signal}. Starting graceful shutdown...`);
@@ -33,3 +33,5 @@ const handleShutdown = async (signal) => {
   logger.info("Graceful shutdown complete. Exiting process safely.");
   process.exit(0);
 };
+
+module.exports = handleShutdown;
