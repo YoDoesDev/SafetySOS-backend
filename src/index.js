@@ -41,10 +41,10 @@ async function startServer() {
         });
         
         // Listen for Ctrl+C in terminal
-        process.on("SIGINT", async () => await handleShutdown("SIGINT"));
+        process.on("SIGINT", async () => await handleShutdown("SIGINT", server));
         
         // Listen for termination signals (like from Docker, PM2, or hosting providers)
-        process.on("SIGTERM", async () => await handleShutdown("SIGTERM"));
+        process.on("SIGTERM", async () => await handleShutdown("SIGTERM", server));
         
         process.on("unhandledRejection", (reason, promise) => {
             logger.error(`❌ UNHANDLED REJECTION at: ${promise} | Reason: ${reason}`);
@@ -53,7 +53,7 @@ async function startServer() {
         process.on("uncaughtException", async (error) => {
             logger.error(`💥 UNCAUGHT EXCEPTION: ${error.message}\nStack: ${error.stack}`);
             logger.warn("Application state unstable due to uncaught exception. Forcing shutdown...");
-            await handleShutdown("uncaughtException");
+            await handleShutdown("uncaughtException", server);
         });
     } catch (error) {
         logger.error(`Failed to start server: ${error.message}`);
@@ -62,7 +62,3 @@ async function startServer() {
 }
 
 startServer();
-
-module.exports = {
-    server
-}

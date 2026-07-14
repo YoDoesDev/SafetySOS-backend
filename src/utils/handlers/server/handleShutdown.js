@@ -2,7 +2,7 @@ const { db } = require("../../data/database.js");
 const { cache } = require("../../data/cache.js");
 const logger = require("../../middleware/logger.js");
 
-const handleShutdown = async (signal) => {
+const handleShutdown = async (signal, server) => {
   logger.info(`Received ${signal}. Starting graceful shutdown...`);
   
   // 1. Stop accepting new HTTP requests
