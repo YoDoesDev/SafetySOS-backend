@@ -2,7 +2,11 @@ const { cache } = require("../cache.js");
 const TABLE_SCHEMAS = require("../tableSchemas.js");
 const { db } = require("../database.js");
 const logger = require("../middleware/logger.js");
-const { getRecord } = require("./getRecord.js"); // To find the record before wiping it
+const { getRecord } = require("./getRecord.js"); 
+const {
+  server
+} = require("../../../index.js");
+
 
 /**
  * Deletes a record from SQLite and evicts it completely from the Redis cache.
