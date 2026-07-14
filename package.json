@@ -19,6 +19,8 @@
     "winston": "^3.17.0",
     "zod": "^4.1.5", 
     "redis": "^5.8.2", 
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2", 
+    "cloudflared": "^2.7.0",
+    "argon2": "^0.41.1"
   }
 }
