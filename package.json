@@ -1,0 +1,24 @@
+ {
+  "name": "safetysos-backend",
+  "version": "1.0.0",
+  "description": "Backend API for SafetySOS",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "better-sqlite3": "^12.4.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.0.1",
+    "helmet": "^8.1.0",
+    "winston": "^3.17.0",
+    "zod": "^4.1.5", 
+    "redis": "^5.8.2", 
+    "jsonwebtoken": "^9.0.2"
+  }
+}
