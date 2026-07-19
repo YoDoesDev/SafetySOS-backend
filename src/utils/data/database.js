@@ -19,6 +19,20 @@ const initDb = () => {
     passwordHash TEXT NOT NULL
   )`).run();
   
+  db.run(`
+    CREATE TABLE IF NOT EXISTS emergency_chat (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      sender_id TEXT NOT NULL,
+      receiver_id TEXT NOT NULL,
+      message_text TEXT NOT NULL,
+      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  db.run(`
+    CREATE INDEX IF NOT EXISTS idx_chat_pairs 
+    ON emergency_chat (sender_id, receiver_id)
+  `);
   
   logger.info("All tables are ready!");
 };
