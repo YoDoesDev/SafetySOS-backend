@@ -14,7 +14,7 @@ const TABLE_SCHEMAS = {
         .string()
         .trim()
         .min(3, "Username must be at least 3 characters long")
-        .max(30, "Username cannot exceed 30 characters"),
+        .max(30, "Username cannot exceed 30 characters"), 
         
       phoneNo: z
         .string()
