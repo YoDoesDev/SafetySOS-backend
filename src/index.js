@@ -36,7 +36,7 @@ async function startServer() {
         require("./utils/middleware/bootstrap.js")(app);
         
         const PORT = process.env.PORT || 3000;
-        server.listen(PORT, () => {
+        server.listen(PORT, "0.0.0.0", () => {
             logger.info(`Server listening on port ${PORT}`);
         });
         
