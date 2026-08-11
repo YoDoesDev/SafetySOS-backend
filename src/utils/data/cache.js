@@ -1,6 +1,5 @@
 const { createClient } = require('redis');
 const logger = require("../middleware/logger.js")
-require('dotenv').config();
 
 // 1. Create the client instance
 const cache = createClient({
