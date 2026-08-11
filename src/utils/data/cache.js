@@ -3,7 +3,7 @@ const logger = require("../middleware/logger.js")
 
 // 1. Create the client instance
 const cache = createClient({
-  url: process.env.UPSTASH_REDIS_REST_URL,
+  url: process.env.REDIS_URL,
   socket: {
     connectTimeout: 10000,
     reconnectStrategy: (retries) => Math.min(retries * 500, 3000)
