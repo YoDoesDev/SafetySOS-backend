@@ -7,7 +7,7 @@ const cache = createClient({
 });
 
 // 2. Setup error handling
-cache.on('error', (err) => logger.error('Redis Client Error', err));
+cache.on('error', (err) => logger.error(`Redis Error ${err}`, err));
 
 // 3. Connect to the server
 const initCache = async () => {
