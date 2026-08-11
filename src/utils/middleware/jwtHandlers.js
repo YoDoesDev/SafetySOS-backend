@@ -2,7 +2,6 @@ const jwt = require("jsonwebtoken");
 const { cache } = require("../data/cache.js");
 const crypto = require("crypto");
 const argon2 = require("argon2");
-require("dotenv").config();
 
 /* ==================== TOKEN HASHING (for Redis) ==================== */
 // Fast + secure hashing for storing tokens in Redis
