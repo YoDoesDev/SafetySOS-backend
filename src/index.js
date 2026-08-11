@@ -46,11 +46,11 @@ async function startServer() {
         process.on("SIGTERM", async () => await handleShutdown("SIGTERM", server));
         
         process.on("unhandledRejection", (reason, promise) => {
-            logger.error(`❌ UNHANDLED REJECTION at: ${promise} | Reason: ${reason}`);
+            logger.error(`UNHANDLED REJECTION at: ${promise} | Reason: ${reason}`);
         });
         
         process.on("uncaughtException", async (error) => {
-            logger.error(`💥 UNCAUGHT EXCEPTION: ${error.message}\nStack: ${error.stack}`);
+            logger.error(`UNCAUGHT EXCEPTION: ${error.message}\nStack: ${error.stack}`);
             logger.warn("Application state unstable due to uncaught exception. Forcing shutdown...");
             await handleShutdown("uncaughtException", server);
         });
