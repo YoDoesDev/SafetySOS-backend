@@ -3,7 +3,7 @@ const router = express.Router();
 
 router.post("/auth/register-check", (req, res) => {
   res.status(200).json({
-    navigateToOtp = true
+    navigateToOtp: true
   })
 });
 
