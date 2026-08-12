@@ -6,3 +6,5 @@ router.post("/auth/register-check", (req, res) => {
     navigateToOtp = true
   })
 });
+
+module.exports = router

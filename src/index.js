@@ -30,8 +30,11 @@ async function startServer() {
         
         // Importing routes  
         const healthRoute = require("./routes/health.js");
+        const regCheckRoute = require("./routes/auth/registerCheck.js");
+        
         // Using routes 
         app.use("/health", healthRoute);
+        app.use("/auth/register-check", regCheckRoute);
         
         // Calling bootstrap  
         require("./utils/middleware/bootstrap.js")(app);
