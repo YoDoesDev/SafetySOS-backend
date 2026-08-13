@@ -4,8 +4,8 @@ const router = express.Router();
 router.post("/auth/register-check", (req, res) => {
   const user = req.username;
   const phone = req.phone;
-  const navigateToOtp = true;
-  const reason;
+  let navigateToOtp = true;
+  let reason;
   
   if(getRecord("accounts", user)){
     navigateToOtp = false;
