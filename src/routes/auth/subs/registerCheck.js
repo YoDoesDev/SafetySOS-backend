@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { getRecord } = require("../../../utils/handlers/data/getRecord.js")
 
 router.post("/auth/register-check", (req, res) => {
   const { username, phone } = req.body;
