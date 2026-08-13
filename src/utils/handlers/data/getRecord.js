@@ -1,7 +1,7 @@
-const { cache } = require("../cache.js");
-const TABLE_SCHEMAS = require("../tableSchemas.js");
-const { db } = require("../database.js");
-const logger = require("../middleware/logger.js");
+const { cache } = require("../../data/cache.js");
+const TABLE_SCHEMAS = require("../../data/tableSchemas.js");
+const { db } = require("../../data/database.js");
+const logger = require("../../middleware/logger.js");
 
 const getRecord = async (tableName, val1, val2 = null) => {
   const schema = TABLE_SCHEMAS[tableName];
