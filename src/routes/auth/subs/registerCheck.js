@@ -2,12 +2,11 @@ const express = require("express");
 const router = express.Router();
 
 router.post("/auth/register-check", (req, res) => {
-  const user = req.username;
-  const phone = req.phone;
+  const { username, phone } = req.body;
   let navigateToOtp = true;
   let reason;
   
-  if(getRecord("accounts", user)){
+  if(getRecord("accounts", username)){
     navigateToOtp = false;
     reason = "Username already exists."
   }
