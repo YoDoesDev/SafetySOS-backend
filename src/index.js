@@ -60,7 +60,7 @@ async function startServer() {
             await handleShutdown("uncaughtException", server);
         });
     } catch (error) {
-        logger.error(`Failed to start server: ${error.message}`);
+        logger.error(`Failed to start server: ${error.stack}`);
         process.exit(1);
     }
 }
