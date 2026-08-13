@@ -34,7 +34,7 @@ async function startServer() {
         
         // Using routes and invoking functions to use em
         app.use("/health", healthRoute);
-        initAuthRoutes();
+        initAuthRoutes(app);
         
         // Calling bootstrap  
         require("./utils/middleware/bootstrap.js")(app);
