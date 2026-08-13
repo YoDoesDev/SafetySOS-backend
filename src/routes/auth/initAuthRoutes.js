@@ -1,5 +1,5 @@
 const regCheckRoute = require("./subs/registerCheck.js");
 
-const initAuthRoutes = () => {
+const initAuthRoutes = (app) => {
   app.use("", regCheckRoute);
 }
