@@ -5,11 +5,13 @@ const { z } = require("zod");
  * - keys: Columns used for database lookups and building Redis cache keys.
  * - validator: The Zod schema that enforces type-safety and field constraints.
  */
+ 
 const TABLE_SCHEMAS = {
-  accounts: {
-    keys: ["userId", "phoneNo"],
+  users: {
+    keys: ["userId", "users", "phoneNo"],
     validator: z.object({
       userId: z.number().int().positive().optional(),
+      uid: z.string().trim(), 
       username: z
         .string()
         .trim()
