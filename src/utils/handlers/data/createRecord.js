@@ -1,4 +1,4 @@
-const { cache } = require("../cache.js");
+const { cache } = require("../../data/cache.js");
 const TABLE_SCHEMAS = require("../tableSchemas.js");
 const { db } = require("../database.js");
 const logger = require("../middleware/logger.js");
