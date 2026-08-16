@@ -7,12 +7,12 @@ router.post("/auth/register-check", async (req, res) => {
   let navigateToOtp = true;
   let reason;
   
-  if(await getRecord("accounts", username)){
+  if(await getRecord("users", username)){
     navigateToOtp = false;
     reason = "Username already exists."
   }
   
-  if(await getRecord("accounts", phone)){
+  if(await getRecord("users", phone)){
     navigateToOtp = false;
     reason = "Phone number already exists."
   }
