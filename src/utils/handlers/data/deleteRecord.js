@@ -3,13 +3,9 @@ const TABLE_SCHEMAS = require("../../data/tableSchemas.js");
 const { db } = require("../../data/database.js");
 const logger = require("../../middleware/logger.js");
 const { getRecord } = require("./getRecord.js"); 
-const {
-  server
-} = require("../../../index.js");
-
 
 /**
- * Deletes a record from SQLite and evicts it completely from the Redis cache.
+ * Deletes a record from Supabase and evicts it completely from the Redis cache.
  * 
  * @param {string} tableName - Name of the table (e.g., 'accounts')
  * @param {any} val1 - Value of the primary search key (e.g., userId or phoneNo)
@@ -47,28 +43,40 @@ const deleteRecord = async (tableName, val1, val2 = null) => {
     };
   }
 
-  // 3. Delete from SQLite
+  // 3. Delete from Supabase
   try {
     const [col1, col2] = schema.keys;
-    let query = `DELETE FROM ${tableName} WHERE ${col1} = ?`;
-    const params = [val1];
-
-    if (val2 !== null && val2 !== undefined) {
-      if (!col2) {
-        return { 
-          data: null, 
-          result: false, 
-          reason: `Table ${tableName} does not support a second key.` 
-        };
-      }
-      query += ` AND ${col2} = ?`;
-      params.push(val2);
+    
+    if (val2 !== null && val2 !== undefined && !col2) {
+      return { 
+        data: null, 
+        result: false, 
+        reason: `Table ${tableName} does not support a second key.` 
+      };
     }
 
-    const stmt = db.prepare(query);
-    const result = stmt.run(...params);
+    let query = db.from(tableName).delete().eq(col1, val1);
 
-    if (result.changes === 0) {
+    if (val2 !== null && val2 !== undefined && col2) {
+      query = query.eq(col2, val2);
+    }
+
+    // Execute deletion and return deleted rows count check
+    const { data, error } = await query.select();
+
+    if (error) {
+      // PostgreSQL Foreign Key Violation Code: 23503
+      if (error.code === "23503") {
+        return {
+          data: null,
+          result: false,
+          reason: "This record cannot be deleted because other active data depends on it."
+        };
+      }
+      throw error;
+    }
+
+    if (!data || data.length === 0) {
       return {
         data: null,
         result: false,
@@ -99,19 +107,12 @@ const deleteRecord = async (tableName, val1, val2 = null) => {
     };
 
   } catch (dbError) {
-    let friendlyReason = "Something went wrong while removing the record. Please try again.";
-
-    // Handle foreign key dependency constraints (e.g., trying to delete an account that still has items tied to it)
-    if (dbError.message.includes("FOREIGN KEY constraint failed")) {
-      friendlyReason = "This record cannot be deleted because other active data depends on it.";
-    }
-
     logger.error(`[DATABASE ERROR] ${dbError.message}`);
 
     return {
       data: null,
       result: false,
-      reason: friendlyReason
+      reason: "Something went wrong while removing the record. Please try again."
     };
   }
 };

@@ -5,7 +5,7 @@ const logger = require("../../middleware/logger.js");
 const { getRecord } = require("./getRecord.js"); 
 
 /**
- * Updates an existing record in SQLite and updates its Redis cache.
+ * Updates an existing record in Supabase and updates its Redis cache.
  * Merges the old record with the new updates, runs validation on the merged result,
  * and handles UI-friendly database constraint error formatting.
  * 
@@ -70,7 +70,7 @@ const updateRecord = async (tableName, val1, updates, val2 = null) => {
     validatedRecord = mergedRecord;
   }
 
-  // 5. Build dynamic SQL update statements
+  // 5. Build dynamic Supabase update statement
   const updateColumns = Object.keys(updates);
   
   if (updateColumns.length === 0) {
@@ -83,29 +83,66 @@ const updateRecord = async (tableName, val1, updates, val2 = null) => {
 
   try {
     const [col1, col2] = schema.keys;
-    const setClause = updateColumns.map(col => `${col} = ?`).join(", ");
-    let query = `UPDATE ${tableName} SET ${setClause} WHERE ${col1} = ?`;
-    
-    // Construct database parameters array
-    const params = updateColumns.map(col => validatedRecord[col]);
-    params.push(val1);
 
-    if (val2 !== null && val2 !== undefined) {
-      if (!col2) {
-        return { 
-          data: null, 
-          result: false, 
-          reason: `Table ${tableName} does not support a second key.` 
-        };
-      }
-      query += ` AND ${col2} = ?`;
-      params.push(val2);
+    if (val2 !== null && val2 !== undefined && !col2) {
+      return { 
+        data: null, 
+        result: false, 
+        reason: `Table ${tableName} does not support a second key.` 
+      };
     }
 
-    const stmt = db.prepare(query);
-    const result = stmt.run(...params);
+    // Build Supabase update payload with only updated properties
+    const updatePayload = {};
+    updateColumns.forEach(col => {
+      updatePayload[col] = validatedRecord[col];
+    });
 
-    if (result.changes === 0) {
+    let query = db.from(tableName).update(updatePayload).eq(col1, val1);
+
+    if (val2 !== null && val2 !== undefined && col2) {
+      query = query.eq(col2, val2);
+    }
+
+    // Execute update and select back modified rows
+    const { data, error } = await query.select();
+
+    if (error) {
+      // PostgreSQL Unique Violation: Code 23505
+      if (error.code === "23505") {
+        let friendlyReason = "A record with this unique information already exists.";
+        const detail = error.detail || "";
+        
+        // Extract column name from PostgreSQL detail string e.g. "Key (phoneNo)=(12345) already exists."
+        const match = detail.match(/Key \(([^)]+)\)=/);
+        if (match && match[1]) {
+          const column = match[1];
+          const fieldLabels = {
+            phoneNo: "phone number",
+            username: "username",
+            email: "email address"
+          };
+          const label = fieldLabels[column] || column;
+          friendlyReason = `This ${label} is already registered to another account.`;
+        }
+
+        return { data: null, result: false, reason: friendlyReason };
+      }
+
+      // PostgreSQL Not Null Violation: Code 23502
+      if (error.code === "23502") {
+        const column = error.column || "field";
+        return {
+          data: null,
+          result: false,
+          reason: `The field "${column}" cannot be left blank.`
+        };
+      }
+
+      throw error;
+    }
+
+    if (!data || data.length === 0) {
       return {
         data: null,
         result: false,
@@ -136,40 +173,12 @@ const updateRecord = async (tableName, val1, updates, val2 = null) => {
     };
 
   } catch (dbError) {
-    let friendlyReason = "Something went wrong while saving your changes. Please try again.";
-
-    if (dbError.message.includes("UNIQUE constraint failed")) {
-      // Extract the column name from the SQLite error string (e.g. "UNIQUE constraint failed: accounts.phoneNo")
-      const match = dbError.message.match(/UNIQUE constraint failed: [a-zA-Z0-9_]+\.([a-zA-Z0-9_]+)/);
-      
-      if (match && match[1]) {
-        const column = match[1];
-        
-        // Match the database column name to a UI-friendly label
-        const fieldLabels = {
-          phoneNo: "phone number",
-          username: "username",
-          email: "email address"
-        };
-        
-        const label = fieldLabels[column] || column;
-        friendlyReason = `This ${label} is already registered to another account.`;
-      } else {
-        friendlyReason = "A record with this unique information already exists.";
-      }
-    } else if (dbError.message.includes("NOT NULL constraint failed")) {
-      const match = dbError.message.match(/NOT NULL constraint failed: [a-zA-Z0-9_]+\.([a-zA-Z0-9_]+)/);
-      if (match && match[1]) {
-        friendlyReason = `The field "${match[1]}" cannot be left blank.`;
-      }
-    }
-
     logger.error(`[DATABASE ERROR] ${dbError.message}`);
 
     return {
       data: null,
       result: false,
-      reason: friendlyReason
+      reason: "Something went wrong while saving your changes. Please try again."
     };
   }
 };

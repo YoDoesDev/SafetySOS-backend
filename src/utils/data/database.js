@@ -1,44 +1,23 @@
-const path = require("path");
-const Database = require("better-sqlite3");
-const logger = require("../middleware/logger.js")
+const { createClient } = require("@supabase/supabase-js");
+const logger = require("../middleware/logger.js");
 
-const db = new Database(path.join(__dirname, '..', '..', 'sos.sqlite'));
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-db.pragma("journal_mode = WAL");
-db.pragma("foreign_keys = ON");
+if (!supabaseUrl || !supabaseKey) {
+  logger.error("[DATABASE] Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables!");
+}
 
-logger.info("[DATABASE] Connected to sos.sqlite");
+// Service role client bypasses RLS for admin operations (password hashing, user management)
+const db = createClient(supabaseUrl, supabaseKey);
 
 const initDb = () => {
-  
-  db.prepare(`
-    CREATE TABLE IF NOT EXISTS users (
-    userId INTEGER PRIMARY KEY AUTOINCREMENT, 
-    uid TEXT NOT NULL UNIQUE, 
-    phoneNo TEXT NOT NULL UNIQUE, 
-    username TEXT NOT NULL, 
-    passwordHash TEXT NOT NULL
-  )`).run();
-  
-  db.prepare(`
-    CREATE TABLE IF NOT EXISTS emergency_chat (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      sender_id TEXT NOT NULL,
-      receiver_id TEXT NOT NULL,
-      message_text TEXT NOT NULL,
-      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `).run();
-
-  db.prepare(`
-    CREATE INDEX IF NOT EXISTS idx_chat_pairs 
-    ON emergency_chat (sender_id, receiver_id)
-  `).run();
-  
-  logger.info("All tables are ready!");
+  // Supabase tables are initialized via the Supabase SQL Editor.
+  // This helper stays for compatibility if app initialization code calls initDb().
+  logger.info("[DATABASE] Connected to Supabase PostgreSQL!");
 };
 
 module.exports = {
-  initDb, 
+  initDb,
   db
-}
+};
