@@ -1,7 +1,7 @@
 const { cache } = require("../../data/cache.js");
-const TABLE_SCHEMAS = require("../tableSchemas.js");
-const { db } = require("../database.js");
-const logger = require("../middleware/logger.js");
+const TABLE_SCHEMAS = require("../../data/tableSchemas.js");
+const { db } = require("../../data/database.js");
+const logger = require("../../middleware/logger.js");
 
 /**
  * Validates, inserts, and caches a brand-new record into the database.
