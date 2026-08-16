@@ -30,17 +30,11 @@ const logger = require("../../../utils/middleware/logger.js");
 router.post("/auth/register", async (req, res) => {
     const { username, phone, password, uid } = req.body;
     
+    // 1. Validations
     if (!username) return res.status(400).json({ navigateToHome: false, reason: "Username field is empty" });
     if (!phone) return res.status(400).json({ navigateToHome: false, reason: "Phone field is empty" });
     if (!password) return res.status(400).json({ navigateToHome: false, reason: "Password field is empty" });
     if (!uid) return res.status(400).json({ navigateToHome: false, reason: "UID field is empty" });
-    
-    if (await getRecord("users", username) || await getRecord("users", phone) || await getRecord("users", uid)) {
-        return res.status(409).json({
-            navigateToHome: false, 
-            reason: "Either username or phone number is already registered."
-        });
-    }
     
     try {
         const hashed = await hashPassword(password);
@@ -52,18 +46,20 @@ router.post("/auth/register", async (req, res) => {
             passwordHash: hashed
         };
         
+        // 2. Attempt creation
         const createResult = await createRecord("users", dataObj);
         
+        // 3. Handle duplicates cleanly (409 Conflict instead of 500)
         if (!createResult.result) {
-            return res.status(500).json({
+            return res.status(409).json({
                 navigateToHome: false,
-                reason: createResult.reason || "Database record creation failed."
+                reason: createResult.reason || "An account with these details already exists."
             });
         }
 
+        // 4. Fetch created user record using phone (which matches schema.keys)
         const row = await getRecord("users", phone);
         
-        // Safe property extraction with local variable fallbacks
         const payload = {
             userId: row?.uid || uid, 
             username: row?.username || username, 
