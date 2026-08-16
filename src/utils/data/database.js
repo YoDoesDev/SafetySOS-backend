@@ -14,7 +14,7 @@ const initDb = () => {
   db.prepare(`
     CREATE TABLE IF NOT EXISTS users (
     userId INTEGER PRIMARY KEY AUTOINCREMENT, 
-    uid TEXT NOT NULL UNIQUE
+    uid TEXT NOT NULL UNIQUE, 
     phoneNo TEXT NOT NULL UNIQUE, 
     username TEXT NOT NULL, 
     passwordHash TEXT NOT NULL
