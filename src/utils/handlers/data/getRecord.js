@@ -46,7 +46,7 @@ const getRecord = async (tableName, val1, val2 = null, customColumn = null) => {
     logger.error(`[REDIS WRITE ERROR] ${err.message}`);
   }
 
-  logger.info(JSON.stringify(data, null, 2));
+  console.log(JSON.stringify(data, null, 2));
   return data;
 };
 
