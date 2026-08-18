@@ -33,6 +33,7 @@ const getRecord = async (tableName, val1, val2 = null, customColumn = null) => {
   if (error) {
     logger.error(`[SUPABASE SELECT ERROR] ${error.message}`);
     logger.error(data);
+    logger.error(error.code);
     return null;
   }
 
