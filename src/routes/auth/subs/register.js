@@ -52,7 +52,7 @@ router.post("/auth/register", async (req, res) => {
         // 3. Handle duplicates cleanly (409 Conflict instead of 500)
         if (!createResult.result) {
             logger.error(createResult.reason);
-            return res.status(409).json({
+            return res.status(200).json({
                 navigateToHome: false,
                 reason: createResult.reason || "An account with these details already exists."
             });
