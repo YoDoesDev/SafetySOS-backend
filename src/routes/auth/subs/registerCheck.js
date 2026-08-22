@@ -7,11 +7,20 @@ router.post("/auth/register-check", async (req, res) => {
   let navigateToOtp = true;
   let reason;
   
+  if(!username || !phone){
+    navigateToOtp = false;
+    reason = "Username already exists.";
+     res.status(400).json({
+        navigateToOtp, 
+        reason
+    })
+  }
+  
   if(await getRecord("users", username, null, "username")){
     navigateToOtp = false;
     reason = "Username already exists.";
     
-    return res.status(200).json({
+    return res.status(409).json({
       navigateToOtp, 
       reason
     });
@@ -21,7 +30,7 @@ router.post("/auth/register-check", async (req, res) => {
     navigateToOtp = false;
     reason = "Phone number already exists.";
     
-    return res.status(200).json({
+    return res.status(409).json({
       navigateToOtp, 
       reason
     });
