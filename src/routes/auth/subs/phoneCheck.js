@@ -3,7 +3,7 @@ const router = express.Router();
 const { getRecord } = require("../../../utils/handlers/data/getRecord.js");
 const logger = require("../../../utils/middleware/logger.js");
 
-router.post("/auth/phone-check", async (req, res) => {
+router.post("/auth/check-phone", async (req, res) => {
   try {
     const { phone } = req.body;
     
