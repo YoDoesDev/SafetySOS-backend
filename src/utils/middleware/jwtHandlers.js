@@ -7,7 +7,7 @@ const argon2 = require("argon2");
 // Fast + secure hashing for storing tokens in Redis
 const hashToken = (token) => {
   return crypto
-    .createHmac("sha256", process.env.ACCESS_KEY || "fallback-secret")
+    .createHmac("sha256", process.env.ACCESS_KEY)
     .update(token)
     .digest("hex");
 };
