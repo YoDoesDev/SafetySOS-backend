@@ -1,11 +1,11 @@
 const rateLimit = require("express-rate-limit");
 
-module.exports = (app) => {
-    app.use(rateLimit({
-        windowMs: 15 * 60 * 1000,
-        limit: 5,
+const ratelimit = rateLimit({
+        windowMs: 60 * 60 * 1000,
+        limit: 60,
         standardHeaders: true,
         legacyHeaders: false,
         message: { success: false, reason: "Too many attempts, please try again later." }
-    }))
-};
+    })
+
+module.exports = ratelimit;
