@@ -62,7 +62,7 @@ router.post("/auth/register", async (req, res) => {
         const row = await getRecord("users", phone);
         
         const payload = {
-            userId: row?.uid || uid, 
+            userId: row?.userId, 
             username: row?.username || username, 
             phoneNo: row?.phoneNo || phone
         };

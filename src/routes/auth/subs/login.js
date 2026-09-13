@@ -38,7 +38,7 @@ router.post("/auth/login", async (req, res) => {
     }
 
     const payload = {
-      userId: row.uid, 
+      userId: row.userId, 
       username: row.username, 
       phoneNo: row.phoneNo
     };
