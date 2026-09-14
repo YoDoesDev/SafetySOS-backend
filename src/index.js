@@ -33,8 +33,8 @@ async function startServer() {
         await initCache();
         
         // Calling ratelimit  
-        const { rateLimiter } = require("./utils/middleware/ratelimit/default.js");
-        ratelimiter(app);
+        const ratelimit = require("./utils/middleware/ratelimit/default.js");
+        app.use(ratelimit);
         
         // Importing routes  
         const healthRoute = require("./routes/health.js");
