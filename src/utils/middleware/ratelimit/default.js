@@ -8,6 +8,4 @@ const ratelimit = rateLimit({
         message: { success: false, reason: "Too many attempts, please try again later." }
     })
 
-module.exports = app => {
-    app.use(ratelimit);
-}
+module.exports = (ratelimit);
