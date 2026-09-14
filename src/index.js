@@ -9,6 +9,9 @@ const http = require("http");
 const helmet = require("helmet");
 const cors = require("cors");
 const app = express();
+
+app.set("trust proxy", 1);
+
 const server = http.createServer(app);
 const logger = require("./utils/middleware/logger.js");
 const { initDb } = require("./utils/data/database.js");
@@ -21,8 +24,6 @@ app.use(cors({
     origin: process.env.CORS_ORIGIN || "*"
 }));
 app.use(express.json());
-app.set("trust proxy", 1);
-
 
 // Async Bootstrapping Function
 async function startServer() {

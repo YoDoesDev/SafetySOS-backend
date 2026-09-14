@@ -8,4 +8,4 @@ const ratelimit = rateLimit({
         message: { success: false, reason: "Too many attempts, please try again later." }
     })
 
-module.exports = (ratelimit);
+module.exports = ratelimit;
