@@ -3,8 +3,7 @@ const { cache } = require("../data/cache.js");
 const crypto = require("crypto");
 const argon2 = require("argon2");
 
-/* ==================== TOKEN HASHING (for Redis) ==================== */
-// Fast + secure hashing for storing tokens in Redis
+/* ==================== TOKEN HASHING ==================== */
 const hashToken = (token) => {
   return crypto
     .createHmac("sha256", process.env.ACCESS_KEY)
@@ -12,7 +11,7 @@ const hashToken = (token) => {
     .digest("hex");
 };
 
-/* ==================== PASSWORD HASHING (Argon2) ==================== */
+/* ==================== PASSWORD HASHING ==================== */
 const hashPassword = async (password) => {
   return await argon2.hash(password, {
     type: argon2.argon2id,
@@ -30,75 +29,77 @@ const verifyPassword = async (password, hashedPassword) => {
   }
 };
 
+/* ==================== HELPER: PAYLOAD SANITIZER ==================== */
+const sanitizePayload = (payload) => {
+  return {
+    userId: payload.userId, 
+    username: payload.username, 
+    phoneNo: payload.phoneNo
+  };
+};
+
 /* ==================== TOKEN GENERATORS ==================== */
-const generateAccessToken = (payload) => {
-  const token = jwt.sign(payload, process.env.ACCESS_KEY, {
-    expiresIn: "15m", // ← Shorter interval
+const generateAccessToken = async (payload) => {
+  const cleanPayload = sanitizePayload(payload);
+  const token = jwt.sign(cleanPayload, process.env.ACCESS_KEY, {
+    expiresIn: "15m",
   });
 
   const hashed = hashToken(token);
-  cache.set(`accToken:${payload.userId}`, hashed, {
-    EX: 15 * 60, // 15 minutes
+  await cache.set(`accToken:${cleanPayload.userId}`, hashed, {
+    EX: 15 * 60,
   });
 
   return token;
 };
 
-const generateRefreshToken = (payload) => {
-  const token = jwt.sign(payload, process.env.REFRESH_KEY, {
-    expiresIn: "30d", // ← Now has finite expiry
+const generateRefreshToken = async (payload) => {
+  const cleanPayload = sanitizePayload(payload);
+  const token = jwt.sign(cleanPayload, process.env.REFRESH_KEY, {
+    expiresIn: "30d",
   });
 
   const hashed = hashToken(token);
-  cache.set(`refToken:${payload.userId}`, hashed, {
-    EX: 30 * 24 * 60 * 60, // 30 days
+  await cache.set(`refToken:${cleanPayload.userId}`, hashed, {
+    EX: 30 * 24 * 60 * 60,
   });
 
   return token;
 };
 
-/* ==================== SEPARATE VERIFY HANDLERS ==================== */
+/* ==================== VERIFICATION HANDLERS ==================== */
 
-// Verifies access token + rotates both tokens if valid
+// Pure validation for standard requests (No auto-rotation)
 const verifyAccessToken = async (accessToken) => {
   try {
     const decoded = jwt.verify(accessToken, process.env.ACCESS_KEY);
     const hashed = hashToken(accessToken);
     const storedHash = await cache.get(`accToken:${decoded.userId}`);
 
-    if (hashed !== storedHash) {
-      return { result: false, reason: "Invalid or expired access token" };
+    if (!storedHash || hashed !== storedHash) {
+      return { result: false, reason: "Invalid or revoked access token" };
     }
 
-    // Rotation (as you wanted)
-    const newAccessToken = generateAccessToken(decoded);
-    const newRefreshToken = generateRefreshToken(decoded);
-
-    return {
-      result: true,
-      payload: decoded,
-      newAccessToken,
-      newRefreshToken,
-    };
+    return { result: true, payload: decoded };
   } catch (err) {
     return { result: false, reason: err.message };
   }
 };
 
-// Verifies refresh token + issues new pair if valid
+// Validates refresh token + performs rotation
 const verifyRefreshToken = async (refreshToken) => {
   try {
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_KEY);
     const hashed = hashToken(refreshToken);
     const storedHash = await cache.get(`refToken:${decoded.userId}`);
 
-    if (hashed !== storedHash) {
-      return { result: false, reason: "Invalid or expired refresh token" };
+    if (!storedHash || hashed !== storedHash) {
+      return { result: false, reason: "Invalid or revoked refresh token" };
     }
 
-    // Issue fresh pair
-    const newAccessToken = generateAccessToken(decoded);
-    const newRefreshToken = generateRefreshToken(decoded);
+    // Generate new pair upon valid refresh
+    const newAccessToken = await generateAccessToken(decoded);
+    const newRefreshToken = await generateRefreshToken(decoded);
 
     return {
       result: true,
@@ -112,11 +113,8 @@ const verifyRefreshToken = async (refreshToken) => {
 };
 
 module.exports = {
-  // Password
   hashPassword,
   verifyPassword,
-
-  // Tokens
   generateAccessToken,
   generateRefreshToken,
   verifyAccessToken,
