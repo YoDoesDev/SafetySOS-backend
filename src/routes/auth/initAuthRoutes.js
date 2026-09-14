@@ -5,16 +5,15 @@ const phoneCheckRoute = require("./subs/phoneCheck.js");
 const forgotPasswordLoginRoute = require("./subs/forgotPasswordLogin.js");
 const checkStatusRoute = require("./subs/checkStatus.js")
 
-const ratelimit = require("../../utils/middleware/ratelimit/auth.js")
-const defaultLimiter = require("../../utils/middleware/ratelimit/default.js")
+const ratelimiter = require("../../utils/middleware/ratelimit/auth.js");
 
 const initAuthRoutes = (app) => {
-  app.use("", ratelimit, regCheckRoute);
-  app.use("", ratelimit, registerRoute);
-  app.use("", ratelimit, loginRoute);
-  app.use("", ratelimit, phoneCheckRoute);
-  app.use("", ratelimit, forgotPasswordLoginRoute);
-  app.use("", defaultLimiter, checkStatusRoute);
+  app.use("", ratelimiter, regCheckRoute);
+  app.use("", ratelimiter, registerRoute);
+  app.use("", ratelimiter, loginRoute);
+  app.use("", ratelimiter, phoneCheckRoute);
+  app.use("", ratelimiter, forgotPasswordLoginRoute);
+  app.use("", checkStatusRoute);
 }
 
 module.exports = initAuthRoutes;
