@@ -21,6 +21,8 @@ app.use(cors({
     origin: process.env.CORS_ORIGIN || "*"
 }));
 app.use(express.json());
+app.set("trust proxy", 1);
+
 
 // Async Bootstrapping Function
 async function startServer() {
