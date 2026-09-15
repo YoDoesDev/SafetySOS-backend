@@ -5,7 +5,7 @@ const ratelimit = rateLimit({
         limit: 10,
         standardHeaders: true,
         legacyHeaders: false,
-        message: { success: false, reason: "Too many attempts, please try again later." }
+        message: { success: false, reason: "Too many attempts during authentication, try again later." }
     })
 
 module.exports = ratelimit;
