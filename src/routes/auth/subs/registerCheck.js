@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { getRecord } = require("../../../utils/handlers/data/getRecord.js")
 
-const ratelimiter = require("../../utils/middleware/ratelimit/auth.js");
+const ratelimiter = require("../../../utils/middleware/ratelimit/auth.js");
 
 router.post("/auth/register-check", ratelimiter, async (req, res) => {
   const { username, phone } = req.body;
