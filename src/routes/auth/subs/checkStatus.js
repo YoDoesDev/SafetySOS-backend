@@ -7,9 +7,6 @@ const {
   verifyRefreshToken
 } = require("../../../utils/middleware/jwtHandlers.js");
 
-/* ==========================================================================
-   POST /auth/check-status (Session Status & Refresh Check)
-   ========================================================================== */
 router.post("/auth/check-status", async (req, res) => {
     try {
         const { aToken, rToken } = req.body;

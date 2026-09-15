@@ -27,7 +27,9 @@ const { createRecord } = require("../../../utils/handlers/data/createRecord.js")
 const { hashPassword, generateAccessToken, generateRefreshToken } = require("../../../utils/middleware/jwtHandlers.js");
 const logger = require("../../../utils/middleware/logger.js");
 
-router.post("/auth/register", async (req, res) => {
+const ratelimiter = require("../../../utils/middleware/ratelimit/auth.js");
+
+router.post("/auth/register", ratelimiter, async (req, res) => {
     const { username, phone, password, uid } = req.body;
     
     // 1. Validations

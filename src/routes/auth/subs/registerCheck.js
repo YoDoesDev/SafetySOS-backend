@@ -2,7 +2,9 @@ const express = require("express");
 const router = express.Router();
 const { getRecord } = require("../../../utils/handlers/data/getRecord.js")
 
-router.post("/auth/register-check", async (req, res) => {
+const ratelimiter = require("../../utils/middleware/ratelimit/auth.js");
+
+router.post("/auth/register-check", ratelimiter, async (req, res) => {
   const { username, phone } = req.body;
   let navigateToOtp = true;
   let reason;

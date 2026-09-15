@@ -8,7 +8,9 @@ const {
 } = require("../../../utils/middleware/jwtHandlers.js");
 const logger = require("../../../utils/middleware/logger.js");
 
-router.post("/auth/login", async (req, res) => {
+const ratelimiter = require("../../../utils/middleware/ratelimit/auth.js");
+
+router.post("/auth/login", ratelimiter, async (req, res) => {
   try {
     const { phone, password } = req.body;
 

@@ -3,7 +3,9 @@ const router = express.Router();
 const { getRecord } = require("../../../utils/handlers/data/getRecord.js");
 const logger = require("../../../utils/middleware/logger.js");
 
-router.post("/auth/check-phone", async (req, res) => {
+const ratelimiter = require("../../../utils/middleware/ratelimit/auth.js");
+
+router.post("/auth/check-phone", ratelimiter, async (req, res) => {
   try {
     const { phone } = req.body;
     

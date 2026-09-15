@@ -5,6 +5,8 @@ const router = express.Router();
 const { getRecord } = require("../../../utils/handlers/data/getRecord.js");
 const { updateRecord } = require("../../../utils/handlers/data/updateRecord.js");
 
+const ratelimiter = require("../../../utils/middleware/ratelimit/auth.js");
+
 const { 
   generateAccessToken, 
   generateRefreshToken 
@@ -12,7 +14,7 @@ const {
 
 const logger = require("../../../utils/middleware/logger.js");
 
-router.post("/auth/forgot-password-login", async (req, res) => {
+router.post("/auth/forgot-password-login", ratelimiter, async (req, res) => {
   try {
     const { uid, phone } = req.body;
 
