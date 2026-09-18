@@ -47,7 +47,7 @@ const generateAccessToken = async (payload) => {
 
   const hashed = hashToken(token);
   await cache.set(`accToken:${cleanPayload.userId}`, hashed, {
-    EX: 15 * 60,
+    EX: 120 * 60,
   });
 
   return token;
