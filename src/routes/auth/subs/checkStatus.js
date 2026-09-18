@@ -27,7 +27,8 @@ router.post("/auth/check-status", async (req, res) => {
             return res.status(200).json({
                 success: true, 
                 reason: null, 
-                aToken: null // Active access token is still valid
+                aToken: null,
+                rToken: null
             });
         }
         
@@ -38,7 +39,8 @@ router.post("/auth/check-status", async (req, res) => {
             return res.status(200).json({
                 success: true, 
                 reason: null, 
-                aToken: refreshCheck.newAccessToken // Return fresh access token inside JSON
+                aToken: refreshCheck.newAccessToken, 
+                rToken: refreshCheck.newRefreshToken
             });
         }
         
@@ -46,7 +48,8 @@ router.post("/auth/check-status", async (req, res) => {
         return res.status(200).json({
             success: false, 
             reason: "Session expired", 
-            aToken: null
+            aToken: null, 
+            rToken: null
         });
         
     } catch (err) {
@@ -54,7 +57,8 @@ router.post("/auth/check-status", async (req, res) => {
         return res.status(500).json({
             success: false, 
             reason: "Internal Server Error", 
-            aToken: null
+            aToken: null, 
+            rToken: null
         });
     }
 });

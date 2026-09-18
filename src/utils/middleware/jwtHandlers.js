@@ -42,7 +42,7 @@ const sanitizePayload = (payload) => {
 const generateAccessToken = async (payload) => {
   const cleanPayload = sanitizePayload(payload);
   const token = jwt.sign(cleanPayload, process.env.ACCESS_KEY, {
-    expiresIn: "15m",
+    expiresIn: "120m",
   });
 
   const hashed = hashToken(token);
