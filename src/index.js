@@ -32,13 +32,15 @@ async function startServer() {
         initDb();
         await initCache();
         
-        // Importing routes  
+        // Importing routes and network logger
         const healthRoute = require("./routes/health.js");
         const initAuthRoutes = require("./routes/auth/initAuthRoutes.js");
+        const networkLogger = require("./utils/middleware/networkLogger.js");
         
-        // Using routes and invoking functions to use em
+        // Using routes, network logger and invoking functions to use em
         app.use("/health", healthRoute);
         initAuthRoutes(app);
+        app.use(networkLogger);
         
         // Calling bootstrap  
         require("./utils/middleware/bootstrap.js")(app);
