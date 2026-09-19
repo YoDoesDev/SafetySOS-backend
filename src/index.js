@@ -18,7 +18,7 @@ const { initDb } = require("./utils/data/database.js");
 const { initCache } = require("./utils/data/cache.js");
 const handleShutdown = require("./utils/handlers/server/handleShutdown.js");
 
-// One-Line Middleware 
+// Core Middleware
 app.use(helmet());
 app.use(cors({
     origin: process.env.CORS_ORIGIN || "*"
@@ -28,18 +28,22 @@ app.use(express.json());
 // Async Bootstrapping Function
 async function startServer() {
     try {
-        // Firing up the database and cache 
+        // Firing up database and cache 
         initDb();
         await initCache();
         
-        // Importing routes and network logger
+        // Importing routes and middleware
         const healthRoute = require("./routes/health.js");
+        const liveLogsRoute = require("./routes/webNetworkLogger.js");
         const initAuthRoutes = require("./routes/auth/initAuthRoutes.js");
         const networkLogger = require("./utils/middleware/networkLogger.js");
         
-        // Using routes, network logger and invoking functions to use em
+        // Mount networkLogger BEFORE routes so it intercepts all traffic
         app.use(networkLogger);
+
+        // Register Routes
         app.use("/health", healthRoute);
+        app.use("/live-logs", liveLogsRoute); // <-- MOUNTED: Accessible at https://safetysos-api.onrender.com/live-logs
         initAuthRoutes(app);
         
         // Calling bootstrap  
@@ -50,10 +54,7 @@ async function startServer() {
             logger.info(`Server listening on port ${PORT}`);
         });
         
-        // Listen for Ctrl+C in terminal
         process.on("SIGINT", async () => await handleShutdown("SIGINT", server));
-        
-        // Listen for termination signals (like from Docker, PM2, or hosting providers)
         process.on("SIGTERM", async () => await handleShutdown("SIGTERM", server));
         
         process.on("unhandledRejection", (reason, promise) => {

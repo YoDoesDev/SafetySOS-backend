@@ -1,31 +1,37 @@
- const logger = require('./logger.js');
- 
- const networkLogger = (req, res, next) => {
+const logger = require('./logger.js');
+
+// In-memory ring buffer for the HTML live-logs viewer
+const recentLogs = [];
+
+const networkLogger = (req, res, next) => {
   const socket = req.socket;
-  const isEncrypted = Boolean(socket.encrypted);
+  
+  // Extract true public IP forwarded by Render's reverse proxy
+  const realClientIp = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip;
+  const proto = req.headers['x-forwarded-proto'] || (socket.encrypted ? 'https' : 'http');
 
-  const cipherInfo = isEncrypted && typeof socket.getCipher === 'function' 
-    ? socket.getCipher().name 
-    : 'N/A';
-  
-  const tlsVersion = isEncrypted && typeof socket.getProtocol === 'function' 
-    ? socket.getProtocol() 
-    : 'N/A';
+  const logBlock = [
+    '================ [ INCOMING NETWORK TRAFFIC ] ================',
+    `[L3 Network]   Public Client IP: ${realClientIp} | Container Local IP: ${socket.localAddress}`,
+    `[L4 Transport] Source Port: ${socket.remotePort} -> Dest Port: ${socket.localPort}`,
+    `[L4 Transport] Protocol: TCP | Edge Encrypted: ${proto.toUpperCase()}`,
+    `[L7 App]       HTTP ${req.method} ${req.url} - User-Agent: ${req.get('User-Agent') || 'N/A'}`,
+    '============================================================='
+  ].join('\n');
 
-  // Format the structured output for Winston
-  logger.info('\n================ [ INCOMING NETWORK TRAFFIC ] =================');
-  logger.info(`[L3 Network]   Client IP: ${req.ip} | Local Server IP: ${socket.localAddress}`);
-  logger.info(`[L4 Transport] Source Port: ${socket.remotePort} -> Dest Port: ${socket.localPort}`);
-  logger.info(`[L4 Transport] Protocol: TCP | Encrypted: ${isEncrypted ? 'TLS/SSL' : 'None'}`);
-  
-  if (isEncrypted) {
-    logger.info(`[L4 TLS/SSL]   Cipher: ${cipherInfo} | Protocol Version: ${tlsVersion}`);
-  }
-  
-  logger.info(`[L7 App]       HTTP ${req.method} ${req.url} - User-Agent: ${req.get('User-Agent') || 'N/A'}`);
-  logger.info('=============================================================\n');
+  // Push to memory buffer (keep last 20 requests)
+  recentLogs.push({
+    time: new Date().toLocaleTimeString(),
+    text: logBlock
+  });
+  if (recentLogs.length > 20) recentLogs.shift();
+
+  // Log to Winston stdout (Render Dashboard)
+  logger.info(`\n${logBlock}\n`);
 
   next();
 };
 
-module.exports = networkLogger
+// Export both the middleware function AND the recentLogs array
+module.exports = networkLogger;
+module.exports.recentLogs = recentLogs;
