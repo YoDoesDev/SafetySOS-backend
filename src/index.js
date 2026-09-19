@@ -38,9 +38,9 @@ async function startServer() {
         const networkLogger = require("./utils/middleware/networkLogger.js");
         
         // Using routes, network logger and invoking functions to use em
+        app.use(networkLogger);
         app.use("/health", healthRoute);
         initAuthRoutes(app);
-        app.use(networkLogger);
         
         // Calling bootstrap  
         require("./utils/middleware/bootstrap.js")(app);

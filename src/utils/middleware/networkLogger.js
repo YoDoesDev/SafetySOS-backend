@@ -27,3 +27,5 @@
 
   next();
 };
+
+module.exports = networkLogger
