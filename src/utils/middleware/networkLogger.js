@@ -1,16 +1,21 @@
 const logger = require('./logger.js');
 
-// In-memory ring buffer for the HTML live-logs viewer
 const recentLogs = [];
 
 const networkLogger = (req, res, next) => {
+  // 1. Ignore auto-refreshes from the live-logs web page itself
+  if (req.originalUrl === '/live-logs' || req.url === '/live-logs') {
+    return next();
+  }
+
+  // 2. FILTER: Only record requests sent with your secret header
+  // (Change 'my-demo-2026' to whatever secret key you want!)
+  const isDemoPing = req.headers['x-presentation-token'] === 'my-demo-2026';
+
   const socket = req.socket;
-  
-  // Extract true public IP forwarded by Render's reverse proxy
   const realClientIp = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip;
   const proto = req.headers['x-forwarded-proto'] || (socket.encrypted ? 'https' : 'http');
 
-  // Time calculations
   const now = new Date();
   const utcTime = now.toUTCString();
   const istTime = now.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true });
@@ -25,20 +30,20 @@ const networkLogger = (req, res, next) => {
     '============================================================='
   ].join('\n');
 
-  // Push to memory buffer (keep last 20 requests)
-  recentLogs.push({
-    timeIST: istTime,
-    timeUTC: utcTime,
-    text: logBlock
-  });
-  if (recentLogs.length > 20) recentLogs.shift();
+  // ONLY push to the projector buffer if it's YOUR ping!
+  if (isDemoPing) {
+    recentLogs.push({
+      time: istTime,
+      text: logBlock
+    });
+    if (recentLogs.length > 20) recentLogs.shift();
+  }
 
-  // Log to Winston stdout (Render Dashboard)
+  // Still write ALL traffic to Winston console logs for server debugging
   logger.info(`\n${logBlock}\n`);
 
   next();
 };
 
-// Export both the middleware function AND the recentLogs array
 module.exports = networkLogger;
 module.exports.recentLogs = recentLogs;
