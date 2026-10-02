@@ -11,6 +11,8 @@ router.post("/auth/check-status", async (req, res) => {
     try {
         const { aToken, rToken } = req.body;
         
+        logger.info("App opened!")
+        
         // 1. If tokens are missing completely, cleanly reject session restoration
         if (!aToken || !rToken) {
             return res.status(200).json({
