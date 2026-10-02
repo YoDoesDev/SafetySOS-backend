@@ -21,7 +21,7 @@ router.post("/contacts/verify-username", ratelimiter, async (req, res) => {
     const aToken = authHeader.split(" ")[1];
     const authorized = await verifyAccessToken(aToken);
 
-    if (!authorized) {
+    if (!authorized || !authorized.result) {
       logger.info("Unauthorized request: Invalid token");
       return res.status(401).json({
         exists: false,
