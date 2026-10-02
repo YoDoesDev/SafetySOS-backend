@@ -36,6 +36,7 @@ async function startServer() {
         const healthRoute = require("./routes/health.js");
         const liveLogsRoute = require("./routes/webNetworkLogger.js");
         const initAuthRoutes = require("./routes/auth/initAuthRoutes.js");
+        const initContactRoutes = require("./routes/auth/initContactRoutes.js");
         const networkLogger = require("./utils/middleware/networkLogger.js");
         
         // Mount networkLogger BEFORE routes so it intercepts all traffic
@@ -45,6 +46,7 @@ async function startServer() {
         app.use("/health", healthRoute);
         app.use("/live-logs", liveLogsRoute); // <-- MOUNTED: Accessible at https://safetysos-api.onrender.com/live-logs
         initAuthRoutes(app);
+        initContactRoutes(app);
         
         // Calling bootstrap  
         require("./utils/middleware/bootstrap.js")(app);
