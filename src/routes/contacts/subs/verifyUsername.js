@@ -7,6 +7,7 @@ const { verifyAccessToken } = require("../../../utils/middleware/jwtHandlers.js"
 const ratelimiter = require("../../../utils/middleware/ratelimit/auth.js");
 
 router.get("/contacts/verify-username", ratelimiter, async (req, res) => {
+  logger.info("Verify path called!")
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
