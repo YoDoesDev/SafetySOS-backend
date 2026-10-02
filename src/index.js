@@ -36,7 +36,7 @@ async function startServer() {
         const healthRoute = require("./routes/health.js");
         const liveLogsRoute = require("./routes/webNetworkLogger.js");
         const initAuthRoutes = require("./routes/auth/initAuthRoutes.js");
-        const initContactRoutes = require("./routes/auth/initContactRoutes.js");
+        const initContactRoutes = require("./routes/contacts/initContactRoutes.js");
         const networkLogger = require("./utils/middleware/networkLogger.js");
         
         // Mount networkLogger BEFORE routes so it intercepts all traffic
