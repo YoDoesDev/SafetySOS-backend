@@ -6,7 +6,7 @@ const { getRecord } = require("../../../utils/handlers/data/getRecord.js");
 const { verifyAccessToken } = require("../../../utils/middleware/jwtHandlers.js");
 const ratelimiter = require("../../../utils/middleware/ratelimit/auth.js");
 
-router.post("/contacts/verify-username", ratelimiter, async (req, res) => {
+router.get("/contacts/verify-username", ratelimiter, async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
