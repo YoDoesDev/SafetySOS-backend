@@ -76,7 +76,7 @@ router.post("/auth/register", ratelimiter, async (req, res) => {
             username, 
             phone, 
             passwordHash: hashed, 
-            uid, 
+            uid, condition ? true : false
             accessToken, 
             refreshToken, 
             navigateToHome: true
