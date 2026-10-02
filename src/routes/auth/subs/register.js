@@ -61,7 +61,7 @@ router.post("/auth/register", ratelimiter, async (req, res) => {
         }
 
         // 4. Fetch created user record using phone (which matches schema.keys)
-        const row = await getRecord("users", phone);
+        const row = await getRecord("users", phone, null, "phoneNo");
         
         const payload = {
             userId: row?.userId, 
