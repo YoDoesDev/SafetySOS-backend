@@ -40,12 +40,13 @@ router.post("/contacts/verify-username", ratelimiter, async (req, res) => {
     const row = await getRecord("users", username, null, "username"); 
 
     if (!row) {
+      logger.info("[contacts/] Username not found")
       return res.status(200).json({
         exists: false,
         reason: "Username not found."
       });
     }
-
+  logger.info("[contacts/] Username found! ")
     return res.status(200).json({
       exists: true,
       reason: null
