@@ -37,7 +37,7 @@ router.post("/contacts/verify-username", ratelimiter, async (req, res) => {
     }
 
     // Ensure getRecord is awaited if it returns a Promise, and pass correct parameters
-    const row = await getRecord("users", username);
+    const row = await getRecord("users", username, null, "username");
 
     if (!row) {
       return res.status(200).json({
