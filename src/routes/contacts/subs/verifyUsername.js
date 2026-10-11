@@ -29,11 +29,18 @@ router.post("/contacts/verify-username", ratelimiter, async (req, res) => {
       });
     }
 
-    const { username } = req.body;
+    const { username, phone } = req.body;
     if (!username) {
       return res.status(400).json({
         exists: false,
         reason: "Username is required."
+      });
+    }
+    
+    if (!phone) {
+      return res.status(400).json({
+        exists: false,
+        reason: "Phone is required."
       });
     }
 
@@ -47,6 +54,15 @@ router.post("/contacts/verify-username", ratelimiter, async (req, res) => {
         reason: "Username not found."
       });
     }
+    
+    if(row.phoneNo != phone){
+      logger.info("[contacts/] Username and phone don't match")
+      return res.status(200).json({
+        exists: false,
+        reason: "Seems like the phone number does not belong to this username. Try a different username or leave the username blank if the phone number is not available on ResQ."
+      });
+    }
+    
   logger.info("[contacts/] Username found! ")
     return res.status(200).json({
       exists: true,
