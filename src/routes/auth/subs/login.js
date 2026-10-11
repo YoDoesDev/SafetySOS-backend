@@ -51,8 +51,8 @@ router.post("/auth/login", ratelimiter, async (req, res) => {
     return res.status(200).json({
       accessToken: aToken, 
       refreshToken: rToken,
-      row.phoneNo,
-      row.username
+      phone: row.phoneNo,
+      username: row.username
     });
 
   } catch (error) {
