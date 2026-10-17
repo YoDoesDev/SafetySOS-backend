@@ -112,6 +112,35 @@ const verifyRefreshToken = async (refreshToken) => {
   }
 };
 
+// Decodes token, extracts userId, and deletes access token from cache
+const revokeAccessToken = async (accessToken) => {
+  try {
+    const decoded = jwt.decode(accessToken);
+    if (decoded && decoded.userId) {
+      await cache.del(`accToken:${decoded.userId}`);
+      return { result: true };
+    }
+    return { result: false, reason: "Invalid token payload" };
+  } catch (err) {
+    return { result: false, reason: err.message };
+  }
+};
+
+// Decodes token, extracts userId, and deletes refresh token from cache
+const revokeRefreshToken = async (refreshToken) => {
+  try {
+    const decoded = jwt.decode(refreshToken);
+    if (decoded && decoded.userId) {
+      await cache.del(`refToken:${decoded.userId}`);
+      return { result: true };
+    }
+    return { result: false, reason: "Invalid token payload" };
+  } catch (err) {
+    return { result: false, reason: err.message };
+  }
+};
+
+
 module.exports = {
   hashPassword,
   verifyPassword,
@@ -119,4 +148,6 @@ module.exports = {
   generateRefreshToken,
   verifyAccessToken,
   verifyRefreshToken,
+  revokeAccessToken,
+  revokeRefreshToken
 };
