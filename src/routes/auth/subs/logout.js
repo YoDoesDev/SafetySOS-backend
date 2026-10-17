@@ -3,7 +3,7 @@ const router = express.Router();
 
 const logger = require("../../../utils/middleware/logger.js");
 const ratelimiter = require("../../../utils/middleware/ratelimit/auth.js");
-const { revokeAccessToken, revokeRefreshToken } = require("../../../utils/middleware/tokens.js");
+const { revokeAccessToken, revokeRefreshToken } = require("../../../utils/middleware/jwtHandlers.js");
 
 router.post("/auth/logout", ratelimiter, async (req, res) => {
   try {
