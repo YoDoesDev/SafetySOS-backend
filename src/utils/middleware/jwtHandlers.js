@@ -34,7 +34,8 @@ const sanitizePayload = (payload) => {
   return {
     userId: payload.userId, 
     username: payload.username, 
-    phoneNo: payload.phoneNo
+    phoneNo: payload.phoneNo,
+    deviceId: payload.deviceId
   };
 };
 
@@ -46,7 +47,7 @@ const generateAccessToken = async (payload) => {
   });
 
   const hashed = hashToken(token);
-  await cache.set(`accToken:${cleanPayload.userId}`, hashed, {
+  await cache.set(`accToken:${cleanPayload.userId}:${cleanPayload.deviceId}`, hashed, {
     EX: 120 * 60,
   });
 
@@ -60,7 +61,7 @@ const generateRefreshToken = async (payload) => {
   });
 
   const hashed = hashToken(token);
-  await cache.set(`refToken:${cleanPayload.userId}`, hashed, {
+  await cache.set(`refToken:${cleanPayload.userId}:${cleanPayload.deviceId}`, hashed, {
     EX: 30 * 24 * 60 * 60,
   });
 
@@ -74,7 +75,7 @@ const verifyAccessToken = async (accessToken) => {
   try {
     const decoded = jwt.verify(accessToken, process.env.ACCESS_KEY);
     const hashed = hashToken(accessToken);
-    const storedHash = await cache.get(`accToken:${decoded.userId}`);
+    const storedHash = await cache.get(`accToken:${decoded.userId}:${decoded.deviceId}`);
 
     if (!storedHash || hashed !== storedHash) {
       return { result: false, reason: "Invalid or revoked access token" };
@@ -91,7 +92,7 @@ const verifyRefreshToken = async (refreshToken) => {
   try {
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_KEY);
     const hashed = hashToken(refreshToken);
-    const storedHash = await cache.get(`refToken:${decoded.userId}`);
+    const storedHash = await cache.get(`refToken:${decoded.userId}:${decoded.deviceId}`);
 
     if (!storedHash || hashed !== storedHash) {
       return { result: false, reason: "Invalid or revoked refresh token" };
@@ -117,7 +118,7 @@ const revokeAccessToken = async (accessToken) => {
   try {
     const decoded = jwt.decode(accessToken);
     if (decoded && decoded.userId) {
-      await cache.del(`accToken:${decoded.userId}`);
+      await cache.del(`accToken:${decoded.userId}:${decoded.deviceId}`);
       return { result: true };
     }
     return { result: false, reason: "Invalid token payload" };
@@ -131,7 +132,7 @@ const revokeRefreshToken = async (refreshToken) => {
   try {
     const decoded = jwt.decode(refreshToken);
     if (decoded && decoded.userId) {
-      await cache.del(`refToken:${decoded.userId}`);
+      await cache.del(`refToken:${decoded.userId}:${decoded.deviceId}`);
       return { result: true };
     }
     return { result: false, reason: "Invalid token payload" };

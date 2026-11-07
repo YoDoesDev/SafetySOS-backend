@@ -31,12 +31,18 @@ const ratelimiter = require("../../../utils/middleware/ratelimit/auth.js");
 
 router.post("/auth/register", ratelimiter, async (req, res) => {
     const { username, phone, password, uid } = req.body;
+    const deviceId = req.headers['x-device-id'];
     
     // 1. Validations
     if (!username) return res.status(400).json({ navigateToHome: false, reason: "Username field is empty" });
     if (!phone) return res.status(400).json({ navigateToHome: false, reason: "Phone field is empty" });
     if (!password) return res.status(400).json({ navigateToHome: false, reason: "Password field is empty" });
     if (!uid) return res.status(400).json({ navigateToHome: false, reason: "UID field is empty" });
+    if(!deviceId) return res.status(400).json({
+        success: false,
+        reason: "Device ID not given."
+      });
+    
     
     try {
         const hashed = await hashPassword(password);
@@ -66,7 +72,8 @@ router.post("/auth/register", ratelimiter, async (req, res) => {
         const payload = {
             userId: row?.userId, 
             username: row?.username || username, 
-            phoneNo: row?.phoneNo || phone
+            phoneNo: row?.phoneNo || phone,
+            deviceId: deviceId
         };
         
         const accessToken = await generateAccessToken(payload);

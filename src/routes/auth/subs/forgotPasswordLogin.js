@@ -17,6 +17,7 @@ const logger = require("../../../utils/middleware/logger.js");
 router.post("/auth/forgot-password-login", ratelimiter, async (req, res) => {
   try {
     const { uid, phone } = req.body;
+    const deviceId = req.headers['x-device-id'];
 
     // Validate payload
     if (!uid || !phone) {
@@ -26,6 +27,13 @@ router.post("/auth/forgot-password-login", ratelimiter, async (req, res) => {
         accessToken: null,
         refreshToken: null
       });
+    }
+    
+    if(!deviceId){
+      return res.status(400).json({
+        success: false,
+        reason: "Device ID not given."
+      })
     }
 
     // 1. Retrieve existing user by phone number
@@ -56,7 +64,8 @@ router.post("/auth/forgot-password-login", ratelimiter, async (req, res) => {
     const payload = {
       userId: row.userId, 
       username: row.username, 
-      phoneNo: row.phoneNo
+      phoneNo: row.phoneNo,
+      deviceId: deviceId
     };
 
     const aToken = await generateAccessToken(payload);
