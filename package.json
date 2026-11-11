@@ -21,6 +21,7 @@
     "redis": "^5.8.2", 
     "jsonwebtoken": "^9.0.2", 
     "argon2": "^0.41.1", 
-    "@supabase/supabase-js": "^2.48.1"
+    "@supabase/supabase-js": "^2.48.1",
+    "firebase-admin": "^13.0.0"
   }
 }
