@@ -19,7 +19,7 @@ router.post("/auth/forgot-password-login", ratelimiter, async (req, res) => {
     if (!idToken || !phone) {
       return res.status(400).json({
         success: false,
-        reason: "Phone number and verification token are required.",
+        reason: "Phone number and verification token are required." + ` Given shi: ${phone} and ${idToken}`,
         accessToken: null,
         refreshToken: null,
       });
