@@ -1,7 +1,7 @@
  {
   "name": "safetysos-backend",
   "version": "1.0.0",
-  "description": "Backend API for SafetySOS",
+  "description": "Backend API for ResQ",
   "main": "src/index.js",
   "type": "commonjs",
   "scripts": {
