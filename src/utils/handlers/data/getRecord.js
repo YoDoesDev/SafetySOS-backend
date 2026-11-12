@@ -32,7 +32,6 @@ const getRecord = async (tableName, val1, val2 = null, customColumn = null) => {
 
   if (error) {
     logger.error(`[SUPABASE SELECT ERROR] ${error.message}`);
-    logger.error(data);
     logger.error(error.code);
     return null;
   }
@@ -46,7 +45,6 @@ const getRecord = async (tableName, val1, val2 = null, customColumn = null) => {
     logger.error(`[REDIS WRITE ERROR] ${err.message}`);
   }
 
-  console.log(JSON.stringify(data, null, 2));
   return data;
 };
 

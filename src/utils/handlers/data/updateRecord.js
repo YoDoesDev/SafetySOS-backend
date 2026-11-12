@@ -59,7 +59,7 @@ const updateRecord = async (tableName, val1, updates, val2 = null, customColumn 
     const validation = schema.validator.safeParse(mergedRecord);
 
     if (!validation.success) {
-      const friendlyErrors = validation.error.errors
+      const friendlyErrors = validation.error.issues
         .map((err) => `${err.path.join(".")}: ${err.message}`)
         .join(", ");
 

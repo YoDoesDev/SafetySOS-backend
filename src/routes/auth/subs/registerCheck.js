@@ -5,14 +5,15 @@ const { getRecord } = require("../../../utils/handlers/data/getRecord.js")
 const ratelimiter = require("../../../utils/middleware/ratelimit/auth.js");
 
 router.post("/auth/register-check", ratelimiter, async (req, res) => {
-  const { username, phone } = req.body;
+  try{
+    const { username, phone } = req.body;
   let navigateToOtp = true;
   let reason;
   
   if(!username || !phone){
     navigateToOtp = false;
-    reason = "Username already exists.";
-     res.status(400).json({
+    reason = "Username or phone not given.";
+    return res.status(400).json({
         navigateToOtp, 
         reason
     })
@@ -38,10 +39,17 @@ router.post("/auth/register-check", ratelimiter, async (req, res) => {
     });
   }
   
-  res.status(200).json({
+  return res.status(200).json({
     navigateToOtp, 
     reason
   });
+  } catch(err){
+    logger.error("[ERROR IN REGISTER CHECK] " + err.stack);
+    return res.status(500).json({
+      navigateToOtp: false,
+      reason: "Internal Server Error (500)"
+    })
+  }
 });
 
 module.exports = router;

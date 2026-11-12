@@ -8,7 +8,7 @@ const { z } = require("zod");
  
 const TABLE_SCHEMAS = {
   users: {
-    keys: ["userId", "users", "phoneNo"],
+    keys: ["userId", "username", "phoneNo"],
     validator: z.object({
       userId: z.number().int().positive().optional(),
       uid: z.string().trim(), 

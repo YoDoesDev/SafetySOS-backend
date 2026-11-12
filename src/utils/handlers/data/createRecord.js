@@ -13,7 +13,7 @@ const createRecord = async (tableName, inputData) => {
   if (schema.validator) {
     const validation = schema.validator.safeParse(inputData);
     if (!validation.success) {
-      const friendlyErrors = validation.error.errors.map(err => `${err.path.join(".")}: ${err.message}`).join(", ");
+      const friendlyErrors = validation.error.issues.map(err => `${err.path.join(".")}: ${err.message}`).join(", ");
       return { data: null, result: false, reason: `Validation failed: ${friendlyErrors}` };
     }
   }
