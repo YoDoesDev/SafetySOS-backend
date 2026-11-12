@@ -52,6 +52,10 @@ async function startServer() {
         require("./utils/middleware/bootstrap.js")(app);
         
         const PORT = process.env.PORT || 3000;
+        
+        // Attach Socket.IO to the same HTTP server (must be before listen)
+        require("./utils/middleware/websockets.js").initSockets(server);
+        
         server.listen(PORT, "0.0.0.0", () => {
             logger.info(`Server listening on port ${PORT}`);
         });
