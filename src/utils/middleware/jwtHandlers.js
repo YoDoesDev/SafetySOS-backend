@@ -121,7 +121,7 @@ const revokeAccessToken = async (accessToken) => {
       ignoreExpiration: true,
     });
     await cache.del(`accToken:${decoded.userId}:${decoded.deviceId}`);
-    return { result: true };
+    return { result: true, userId: decoded.userId, deviceId: decoded.deviceId };
   } catch (err) {
     return { result: false, reason: "Invalid token" };
   }
