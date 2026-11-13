@@ -18,7 +18,8 @@ router.post("/auth/check-status", async (req, res) => {
             return res.status(200).json({
                 success: false,
                 reason: "Tokens missing",
-                aToken: null
+                aToken: null,
+                rToken: null
             });
         }
         
