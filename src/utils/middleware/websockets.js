@@ -1,6 +1,7 @@
 const { Server } = require("socket.io");
 const { verifyAccessToken } = require("./jwtHandlers.js");
 const logger = require("./logger.js");
+const { registerChatHandlers } = require("../handlers/chat/chatHandlers.js");
 
 let io = null;
 
@@ -83,7 +84,8 @@ const initSockets = (server) => {
       })
     );
 
-    // Chat events (send_message etc.) get added here later.
+    // All chat events (links + messages) live in chatHandlers.js
+    registerChatHandlers(socket, { guard, emitToUser });
 
     socket.on("disconnect", () => {
       clearTimeout(expiryTimer);
