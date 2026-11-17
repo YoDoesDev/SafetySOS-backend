@@ -17,6 +17,9 @@ const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;   // drop anything older than 7 days
 const MAX_ACK_BATCH = 100;                    // ids per ack call
 
 const queueKey = (userId) => `msgq:${userId}`;
+// Keep a short-lived status record after mailbox delivery so the sender can
+// learn whether a message was delivered/read, including after reconnecting.
+const statusKey = (senderId) => `msgstatus:${senderId}`;
 const fail = (reason) => ({ success: false, reason });
 
 /* ---------- save a message for a receiver ---------- */
@@ -56,6 +59,13 @@ const enqueueMessage = async ({ from, fromUsername, to, clientId, text }) => {
     await cache.expire(key, Math.floor(MAX_AGE_MS / 1000));
 
     if (!added) return { success: true, duplicate: true, messageId };
+    await cache.hSet(statusKey(from), messageId, JSON.stringify({
+      to,
+      clientId,
+      status: 1, // accepted by the server
+      updatedAt: Date.now(),
+    }));
+    await cache.expire(statusKey(from), Math.floor(MAX_AGE_MS / 1000));
     return { success: true, duplicate: false, messageId, message };
   } catch (err) {
     logger.error("[messageQueue.enqueueMessage] " + err.message);
@@ -106,13 +116,89 @@ const ackMessages = async (userId, ids) => {
       .slice(0, MAX_ACK_BATCH);
     if (clean.length === 0) return fail("No valid message ids.");
 
-    // Only deletes from THIS user's own mailbox, so nobody can ack someone else's mail
+    // Only acknowledge messages addressed to this user's mailbox. Update the
+    // sender-owned status record before removing the mailbox entry.
+    const delivered = [];
+    for (const id of clean) {
+      const senderId = Number(id.split(":", 1)[0]);
+      if (!Number.isInteger(senderId)) continue;
+      const raw = await cache.hGet(statusKey(senderId), id);
+      if (!raw) continue;
+      const record = JSON.parse(raw);
+      if (record.to !== userId) continue;
+      record.status = Math.max(record.status || 1, 2);
+      record.updatedAt = Date.now();
+      await cache.hSet(statusKey(senderId), id, JSON.stringify(record));
+      delivered.push({ senderId, clientId: record.clientId });
+    }
     await cache.hDel(queueKey(userId), clean);
-    return { success: true, acked: clean.length };
+    return { success: true, acked: clean.length, delivered };
   } catch (err) {
     logger.error("[messageQueue.ackMessages] " + err.message);
     return fail("Internal Server Error");
   }
 };
 
-module.exports = { enqueueMessage, getPending, ackMessages };
+/* ---------- receiver opened a conversation -> mark messages read ---------- */
+const markMessagesRead = async (readerId, ids) => {
+  try {
+    if (!Number.isInteger(readerId)) return fail("Not authenticated.");
+    if (!Array.isArray(ids) || ids.length === 0) return fail("No message ids given.");
+
+    const clean = ids
+      .filter((id) => typeof id === "string" && id.length <= 80)
+      .slice(0, MAX_ACK_BATCH);
+    const read = [];
+
+    for (const id of clean) {
+      const senderId = Number(id.split(":", 1)[0]);
+      if (!Number.isInteger(senderId) || senderId === readerId) continue;
+      const raw = await cache.hGet(statusKey(senderId), id);
+      if (!raw) continue;
+      const record = JSON.parse(raw);
+      // A user can only mark a message as read if it was addressed to them and
+      // accepted by the server. The recipient can only know its id after receipt.
+      if (record.to !== readerId || (record.status || 0) < 1) continue;
+      if (record.status < 3) {
+        record.status = 3;
+        record.updatedAt = Date.now();
+        await cache.hSet(statusKey(senderId), id, JSON.stringify(record));
+      }
+      read.push({ senderId, clientId: record.clientId });
+    }
+    return { success: true, read };
+  } catch (err) {
+    logger.error("[messageQueue.markMessagesRead] " + err.message);
+    return fail("Internal Server Error");
+  }
+};
+
+/* ---------- sender reconnects -> reconcile locally stored statuses ---------- */
+const getMessageStatuses = async (senderId, clientIds) => {
+  try {
+    if (!Number.isInteger(senderId)) return fail("Not authenticated.");
+    if (!Array.isArray(clientIds)) return fail("Invalid message ids.");
+    const clean = clientIds
+      .filter((id) => typeof id === "string" && /^[\w-]{1,64}$/.test(id))
+      .slice(0, MAX_ACK_BATCH);
+    const statuses = [];
+    for (const clientId of clean) {
+      const raw = await cache.hGet(statusKey(senderId), `${senderId}:${clientId}`);
+      if (!raw) continue;
+      const record = JSON.parse(raw);
+      statuses.push({ clientId, status: record.status || 1 });
+    }
+    return { success: true, statuses };
+  } catch (err) {
+    logger.error("[messageQueue.getMessageStatuses] " + err.message);
+    return fail("Internal Server Error");
+  }
+};
+
+module.exports = {
+  enqueueMessage,
+  getPending,
+  ackMessages,
+  markMessagesRead,
+  getMessageStatuses,
+};
